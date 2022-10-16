@@ -135,4 +135,61 @@ class Movie extends Media {
 	}
 }
 
+class MediaCollection<T extends Media> {
+	private _identifier: string;
+	private _name: string = "";
+	private _collection: ReadonlyArray<T> = [];
+	private readonly _type: Function;
 
+	constructor(type: Function, name?: string, identifier?: string) {
+		this._type = type;
+
+		if (name) {
+			this._name = name;
+		}
+
+		if (identifier) {
+			this._identifier = identifier;
+		} else {
+			this._identifier = Math.random().toString(36).substr(2, 9);
+		}
+	}
+
+	get identifier(): string {
+		return this._identifier;
+	}
+
+	set identifier(identifier: string) {
+		this._identifier = identifier;
+	}
+
+	get name(): string {
+		return this._name;
+	}
+
+	set name(name: string) {
+		this._name = name;
+	}
+
+	get collection(): ReadonlyArray<T> {
+		return this._collection;
+	}
+
+	set collection(collection: ReadonlyArray<T>) {
+		this._collection = collection;
+	}
+
+	addMedia(media: Readonly<T>): void {
+		if (media) {
+			this._collection = this._collection.concat(media);
+		}
+	}
+
+	reomveMedia(itemId: string) {
+		if (itemId) {
+			this._collection = this._collection.filter(
+				(item) => item.identifier !== itemId
+			);
+		}
+	}
+}
