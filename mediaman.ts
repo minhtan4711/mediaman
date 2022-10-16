@@ -1,3 +1,5 @@
+import localForage from "localforage";
+
 enum Genre {
 	Horror = "Horror",
 	Fantasic = "Fantasic",
@@ -192,4 +194,41 @@ class MediaCollection<T extends Media> {
 			);
 		}
 	}
+}
+
+interface MediaService<T extends Media> {
+	loadMediaCollection(identifier: string): Promise<MediaCollection<T>>;
+	saveMediaCollection(collection: Readonly<MediaCollection<T>>): Promise<void>;
+	getMediaCollectionIdentifierList(): Promise<string[]>;
+	removeMediaCollection(identifier: string): Promise<void>;
+}
+
+class MeidaServiceImpl<T extends Media> implements MediaService<T> {
+	private readonly _store: LocalForage;
+
+	constructor(private _type: Function) {
+		console.log(`Initializing media service for ${_type.name}`);
+
+		// each instance of the media service has its own data store:
+		//github.com/localForage/localForage
+		// the initialization options are described here:
+		//localforage.github.io/localForage/#settings-api-config
+
+		this._store = localForage.createInstance({
+			name: "MediaMan",
+			version: 1.0,
+			storeName: `media-man-${_type.name}`,
+			description: "MeidaMan data store",
+		});
+	}
+
+	loadMediaCollection(identifier: string): Promise<MediaCollection<T>> {}
+
+	saveMediaCollection(
+		collection: Readonly<MediaCollection<T>>
+	): Promise<void> {}
+
+	getMediaCollectionIdentifierList(): Promise<string[]> {}
+
+	removeMediaCollection(identifier: string): Promise<void> {}
 }
