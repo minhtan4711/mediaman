@@ -1,4 +1,11 @@
 import localForage from "localforage";
+import reflectMetadata from "reflect-metadata";
+import {
+	classToPlain,
+	plainToClassFromExist,
+	Expose,
+	Type,
+} from "class-transformer";
 
 enum Genre {
 	Horror = "Horror",
@@ -26,6 +33,7 @@ abstract class Media {
 		}
 	}
 
+	@Expose()
 	get identifier(): string {
 		return this._identifier;
 	}
@@ -34,6 +42,7 @@ abstract class Media {
 		this._identifier = identifier;
 	}
 
+	@Expose()
 	get name(): string {
 		return this.name;
 	}
@@ -42,6 +51,7 @@ abstract class Media {
 		this._name = name;
 	}
 
+	@Expose()
 	get description(): string {
 		return this._description;
 	}
@@ -50,6 +60,7 @@ abstract class Media {
 		this._description = description;
 	}
 
+	@Expose()
 	get pictureLocation(): string {
 		return this._pictureLocation;
 	}
@@ -58,6 +69,7 @@ abstract class Media {
 		this._pictureLocation = pictureLocation;
 	}
 
+	@Expose()
 	get genre(): Genre {
 		return this._genre;
 	}
@@ -85,6 +97,7 @@ class Book extends Media {
 		this._author = author;
 	}
 
+	@Expose()
 	get author(): string {
 		return this._author;
 	}
@@ -93,6 +106,8 @@ class Book extends Media {
 		this._author = author;
 	}
 
+	@Expose()
+	@Type(() => Number)
 	get numberOfPgaes(): number {
 		return this._numberOfPages;
 	}
@@ -120,6 +135,7 @@ class Movie extends Media {
 		this._director = director;
 	}
 
+	@Expose()
 	get director(): string {
 		return this._director;
 	}
@@ -128,6 +144,7 @@ class Movie extends Media {
 		this._director = director;
 	}
 
+	@Expose()
 	get duration(): string {
 		return this._duration;
 	}
@@ -157,6 +174,7 @@ class MediaCollection<T extends Media> {
 		}
 	}
 
+	@Expose()
 	get identifier(): string {
 		return this._identifier;
 	}
@@ -165,6 +183,7 @@ class MediaCollection<T extends Media> {
 		this._identifier = identifier;
 	}
 
+	@Expose()
 	get name(): string {
 		return this._name;
 	}
@@ -173,6 +192,16 @@ class MediaCollection<T extends Media> {
 		this._name = name;
 	}
 
+	@Expose()
+	@Type((options) => {
+		if (options) {
+			return (options.newObject as MediaCollection<T>)._type;
+		} else {
+			throw new Error(
+				"Cannot detemine the type because the options object is null or undefined"
+			);
+		}
+	})
 	get collection(): ReadonlyArray<T> {
 		return this._collection;
 	}
