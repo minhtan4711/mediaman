@@ -1,4 +1,4 @@
-import localForage from "localforage";
+import localForage, { key } from "localforage";
 import reflectMetadata from "reflect-metadata";
 import {
 	classToPlain,
@@ -251,13 +251,93 @@ class MeidaServiceImpl<T extends Media> implements MediaService<T> {
 		});
 	}
 
-	loadMediaCollection(identifier: string): Promise<MediaCollection<T>> {}
+	loadMediaCollection(identifier: string): Promise<MediaCollection<T>> {
+		return new Promise<MediaCollection<T>>((resolve, reject) => {
+			this._store
+				.getItem(identifier)
+				.then((value) => {
+					console.log("Found the collection: ", value);
+					const retrievedCollection = plainToClassFromExist<
+						MediaCollection<T>,
+						any
+					>(new MediaCollection<T>(this._type), value);
+					console.log("Retrieved collection: ", retrievedCollection);
 
-	saveMediaCollection(
-		collection: Readonly<MediaCollection<T>>
-	): Promise<void> {}
+					resolve(retrievedCollection);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
 
-	getMediaCollectionIdentifierList(): Promise<string[]> {}
+	saveMediaCollection(collection: Readonly<MediaCollection<T>>): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			if (!collection) {
+				reject(new Error("The list cannot be null or undefined"));
+			}
 
-	removeMediaCollection(identifier: string): Promise<void> {}
+			console.log(
+				`Saving media collection with the following name ${collection.name}`
+			);
+
+			// serialization class to JSON
+			const serializedVersion = classToPlain(collection, {
+				excludePrefixes: ["_"],
+			});
+
+			console.log("Serialized Version: ", serializedVersion);
+
+			this._store
+				.setItem(collection.identifier, serializedVersion)
+				.then((value) => {
+					console.log(
+						`Saved the ${collection.name} collection successfully! Saved value: ${value}`
+					);
+					resolve();
+				})
+				.catch((err) => {
+					console.error(`Failed to save the ${collection.name} 
+					collection with identifier 
+					${collection.identifier}. Error: ${err}`);
+					reject(err);
+				});
+		});
+	}
+
+	getMediaCollectionIdentifierList(): Promise<string[]> {
+		return new Promise<string[]>((resolve, reject) => {
+			this._store
+				.keys()
+				.then((keys) => {
+					resolve(keys);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
+
+	removeMediaCollection(identifier: string): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			if (!identifier || "" === identifier.trim()) {
+				reject(new Error("The identifier must be provided!"));
+			}
+			console.log(`Removing media collection with the following 
+			identifier ${identifier}`);
+
+			this._store
+				.removeItem(identifier)
+				.then(() => {
+					console.log(`Removed the ${identifier} collection 
+					successfully!`);
+					resolve();
+				})
+				.catch((err) => {
+					console.error(`Failed to removed the ${identifier} 
+					collection`);
+					reject(err);
+				});
+		});
+	}
 }
